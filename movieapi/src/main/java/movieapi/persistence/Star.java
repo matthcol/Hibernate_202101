@@ -15,6 +15,7 @@ public class Star {
 	private Integer id;
 	private String name;
 	private LocalDate birthdate;
+	
 	public Star() {
 		super();
 	}
