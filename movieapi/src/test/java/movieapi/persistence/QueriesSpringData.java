@@ -2,6 +2,7 @@ package movieapi.persistence;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatcher;
 import org.springframework.data.domain.Sort;
 
 import movieapi.persistence.entity.Movie;
@@ -143,8 +146,20 @@ class QueriesSpringData {
 		Star star = new Star();
 		star.setName("Steve McQueen");
 		Example<Star> example = Example.of(star);
-		var data = movieRepository.findAll(example);
+		var data = starRepository.findAll(example);
 		System.out.println(data);
+		star.setBirthdate(LocalDate.of(1930, 3, 24));
+		var data2 = starRepository.findAll(Example.of(star));
+		System.out.println(data2);
+		star.setName("mcqueen");
+		star.setBirthdate(LocalDate.of(1930, 8, 25));
+		var data3 = starRepository.findAll(
+				Example.of(star, 
+						ExampleMatcher.matchingAny()
+							.withIgnoreCase()
+							.withMatcher("name", GenericPropertyMatcher::endsWith)));
+		System.out.println(data3);
+				
 	}
 }
 
