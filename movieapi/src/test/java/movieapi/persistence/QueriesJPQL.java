@@ -3,6 +3,7 @@ package movieapi.persistence;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
@@ -18,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import movieapi.persistence.entity.Movie;
+import movieapi.persistence.entity.Star;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -45,6 +49,18 @@ class QueriesJPQL {
 			// .getSingleResult(); // Movie if only one (NoResultException or NonUniqueResultException)
 		System.out.println(data);
 	}
+	
+	@ParameterizedTest
+	@ValueSource(strings = {"Spectre", "The Man Who Knew Too Much", "Dummy"} )
+	void testMovieByTitleNamedQuery(String title) {
+		var data = entityManager.createNamedQuery(
+				"get_movie_by_title", Movie.class)
+			.setParameter("title", title)
+			.getResultList();  // List<Movie>
+			// .getSingleResult(); // Movie if only one (NoResultException or NonUniqueResultException)
+		System.out.println(data);
+	}
+	
 	
 	@Test
 	void testMovieByTitleAndYearGreater() {
@@ -126,12 +142,36 @@ class QueriesJPQL {
 	void testYearsDirector() {
 		String directorName = "Alfred Hitchcock";
 		var data = entityManager.createQuery(
-				"select distinct m.year from Movie m join m.director s where s.name = :name order by m.year",
+				"select distinct m.year from Movie m join m.director s where s.name = :name order by m.year desc",
 				Short.class)
 			.setParameter("name", directorName)
 			.getResultList();
 		System.out.println(data);
 		
+	}
+	
+	@Test
+	void testTitleYearDirectorName() {
+		entityManager.createQuery(
+				"select m.title, m.year, s.name from Movie m join m.director s",
+				Object[].class)
+			.getResultStream()
+			.limit(10)
+			// .forEach(row->System.out.println(Arrays.toString(row)));
+			.forEach(row->System.out.println(
+					((String) row[0]).toUpperCase() +","+ row[1] +","+ row[2]));
+	}
+	
+	@Test
+	void testStatsByDirector() {
+		long min_nb_movies = 30L;
+		entityManager.createQuery(
+				"select s.name, count(m.id), min(m.year) from Movie m join m.director s group by s having count(m.id) > :min_nb_movie",
+				Object[].class)
+			.setParameter("min_nb_movie", min_nb_movies)
+			.getResultStream()
+			.limit(10)
+			.forEach(row->System.out.println(Arrays.toString(row)));
 	}
 }
 

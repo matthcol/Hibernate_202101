@@ -1,4 +1,4 @@
-package movieapi.persistence;
+package movieapi.persistence.entity;
 
 import java.time.LocalDate;
 

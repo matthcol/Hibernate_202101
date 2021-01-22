@@ -15,6 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Sort;
+
+import movieapi.persistence.entity.Movie;
+import movieapi.persistence.entity.Star;
+import movieapi.persistence.repository.MovieRepository;
+import movieapi.persistence.repository.StarRepository;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -56,12 +63,29 @@ class QueriesSpringData {
 				.collect(Collectors.joining(", "));
 		System.out.println(data);
 	}
+	
+	@Test
+	void testMovieByTitlePartSorted() {
+		String find = "Man";
+		movieRepository.findByTitleContainingOrderByYearDesc(find)
+				.forEach(System.out::println);
+	}
 
 	@Test
 	void testStarByBirthyear() {
 		int year = 1930;
 		var data = starRepository.findByBirthdateYear(year);
 		System.out.println(data);
+	}
+	
+	@Test
+	void testStarByBirthyearAndSort() {
+		int year = 1930;
+		starRepository.findByBirthdateYearAndSort(year, Sort.by("name"))
+			.forEach(System.out::println);
+		starRepository.findByBirthdateYearAndSort(year, 
+				Sort.by(Sort.Order.asc("birthdate"), Sort.Order.desc("name")))
+			.forEach(System.out::println);
 	}
 	
 	@Test
@@ -95,6 +119,32 @@ class QueriesSpringData {
 		String directorName = "Alfred Hitchcock";
 		movieRepository.findByDirectorNameEndingWithIgnoreCase(directorName)
 			.forEach(System.out::println);
+	}
+	
+	@Test
+	void testTitleYearDirectorName() {
+		String directorName = "Alfred Hitchcock";
+		movieRepository.findByDirectorName(directorName)
+			.limit(10)
+			//.filter(m -> m.getYear() == 2020)
+//			.forEach(System.out::println);
+			.forEach(m-> System.out.println(
+					m.getTitleUpperCase() 
+					+","+ m.getYear() ));
+	}
+	
+	@Test
+	void testMovieCount() {
+		System.out.println("Nb movies: " + movieRepository.count());
+	}
+	
+	@Test
+	void testStarByExample() {
+		Star star = new Star();
+		star.setName("Steve McQueen");
+		Example<Star> example = Example.of(star);
+		var data = movieRepository.findAll(example);
+		System.out.println(data);
 	}
 }
 

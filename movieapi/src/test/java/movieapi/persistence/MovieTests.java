@@ -15,6 +15,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import movieapi.persistence.entity.Movie;
+
 @DataJpaTest // by default on H2 DB
 @AutoConfigureTestDatabase(replace = Replace.NONE) // même base+config application
 class MovieTests {
