@@ -15,3 +15,6 @@ set role movie;
 \i cine_data_stars.sql;
 \i cine_data_movies.sql;
 \i cine_data_play.sql;
+-- readjust sequences
+select setval('stars_id_seq', max(id)) from stars;
+select setval('movies_id_seq', max(id)) from movies;
