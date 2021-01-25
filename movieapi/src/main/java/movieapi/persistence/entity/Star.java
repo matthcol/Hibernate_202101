@@ -1,12 +1,16 @@
 package movieapi.persistence.entity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -16,11 +20,16 @@ public class Star {
 	private String name;
 	private LocalDate birthdate;
 	
+	private List<Movie> directedMovies;
+	private List<Movie> playedMovies;
+	
 	public Star() {
-		super();
+		directedMovies = new ArrayList<>();
+		playedMovies = new ArrayList<>();
 	}
+	
 	public Star(String name, LocalDate birthdate) {
-		super();
+		this();
 		this.name = name;
 		this.birthdate = birthdate;
 	}
@@ -47,6 +56,24 @@ public class Star {
 		this.birthdate = birthdate;
 	}
 	
+	@OneToMany(mappedBy = "director") // lazy
+	public List<Movie> getDirectedMovies() {
+		return directedMovies;
+	}
+
+	public void setDirectedMovies(List<Movie> directedMovies) {
+		this.directedMovies = directedMovies;
+	}
+
+	@ManyToMany(mappedBy = "actors") // lazy
+	public List<Movie> getPlayedMovies() {
+		return playedMovies;
+	}
+
+	public void setPlayedMovies(List<Movie> playedMovies) {
+		this.playedMovies = playedMovies;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

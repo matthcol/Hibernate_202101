@@ -174,15 +174,19 @@ class QueriesJPQL {
 			.forEach(row->System.out.println(Arrays.toString(row)));
 	}
 	
-	@Test
-	void testMoviesByActor() {
-		String name = "Daniel Craig";
+	@ParameterizedTest
+	@ValueSource(strings= {"Daniel Craig", "Clint Eastwood", "Steve McQueen"})
+	void testMoviesByActorDirector(String name) {
 		entityManager.createQuery(
-				"select m from Movie m join m.actors s where s.name = :name", 
-				Movie.class)
+				"select s from Star s where s.name = :name",
+				Star.class)
 			.setParameter("name", name)
 			.getResultStream()
-			.forEach(System.out::println);
+			.forEach(s -> {
+				System.out.println(s); 
+				System.out.println("played: " + s.getPlayedMovies());
+				System.out.println("directed: " + s.getDirectedMovies());
+			});
 	}
 }
 
