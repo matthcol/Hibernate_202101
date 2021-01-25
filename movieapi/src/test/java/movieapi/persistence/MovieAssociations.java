@@ -20,6 +20,7 @@ import org.springframework.test.annotation.Rollback;
 import movieapi.persistence.entity.ColorType;
 import movieapi.persistence.entity.Language;
 import movieapi.persistence.entity.Movie;
+import movieapi.persistence.entity.Play;
 import movieapi.persistence.entity.Star;
 
 @DataJpaTest
@@ -60,62 +61,25 @@ class MovieAssociations {
 	void testCreateMovieWithActors() {
 		// scenario 1 : insert new Movie + new Star
 		Movie movie = new Movie("No Time To Die", (short) 2021, (short) 163);
-		Star star = new Star("Cary Joji Fukunaga", LocalDate.of(1977,7,10));
+		Star daniel = new Star("Daniel Craig", null);
+		Star ralph = new Star("Ralph Fiennes", null);
+		entityManager.persist(daniel);
+		entityManager.persist(ralph);
 		entityManager.persist(movie);
-		entityManager.persist(star);
 		entityManager.flush();
-		System.out.println(movie);
+		Play playDaniel = new Play(movie, daniel, "James Bond");
+		Play playRalph = new Play(movie, ralph, "M.");
+		var actors = List.of(playDaniel, playRalph);
+		actors.forEach(entityManager::persist);
+		movie.setPlays(actors);
+		entityManager.flush();
 		int idMovie = movie.getId();
-		int idCary = star.getId(); 
 		entityManager.clear();
-		// scenario 2 : add actors on empty list
+		// Read Data again
 		Movie movie2 = entityManager.find(Movie.class, idMovie);
-		Star daniel = entityManager.find(Star.class, 185819);
-		Star ralph = entityManager.find(Star.class, 146);
-		movie2.setActors(List.of(daniel, ralph));
-		entityManager.flush();
-		System.out.println(movie2.getActors());
-		entityManager.clear();
-		// scenario 3 : add actors on previous actor list
-		Movie movie3 = entityManager.find(Movie.class, idMovie);
-		System.out.println(movie3 + " ; actors: " + movie3.getActors());
-		Star naomie = entityManager.find(Star.class, 365140);
-		movie3.getActors().add(naomie);
-		entityManager.flush(); // delete + 3 inserts
-		System.out.println(movie3.getActors());
-		entityManager.clear();
-		// scenario 4 : set director
-		Movie movie4 = entityManager.find(Movie.class, idMovie);
-		Star cary = entityManager.find(Star.class, idCary);
-		movie4.setDirector(cary);
-		entityManager.flush();
-		entityManager.clear();
-		// scenario 5 : read movie again with default fetching
-		Movie movie5 = entityManager.find(Movie.class, idMovie);
-		System.out.println(movie5); // eager sur director et lazy sur actors
-		System.out.println(movie5.getDirector()); // already fetched
-		System.out.println(movie5.getActors()); // fetch actors here
-		entityManager.clear();
-		// scenario 6 : read movie again with dynamic fetching (JPQL)
-		Movie movie6 = entityManager.createQuery(
-				"select m from Movie m left join fetch m.director left join fetch m.actors where m.id =:id",
-				Movie.class)
-				.setParameter("id", idMovie)
-				.getSingleResult();
-		System.out.println(movie6); // eager sur director et actors
-		System.out.println(movie6.getDirector()); // already fetched
-		System.out.println(movie6.getActors()); // already fetched
-		entityManager.clear();
-		// scenario 7 : read movie again with dynamic fetching (entityGraph)
-		Movie movie7 = entityManager.find(Movie.class, idMovie,
-				Collections.singletonMap(
-						"javax.persistence.fetchgraph",
-						entityManager.getEntityGraph( "movie.actors" )
-					));
-		System.out.println("SC7: " + movie7); // eager sur director et actors
-		System.out.println(movie7.getDirector()); // already fetched
-		System.out.println(movie7.getActors()); // already fetched
-		entityManager.clear();
+		System.out.println("Casting " + movie + ":");
+		movie2.getPlays().stream()
+			.forEach(p-> System.out.println(p.getActor() + " : " + p.getRole()));
 	}
 	
 	@Test

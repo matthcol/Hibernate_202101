@@ -22,6 +22,7 @@ import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -31,12 +32,12 @@ import org.hibernate.annotations.Formula;
 @NamedQuery(
 	name = "get_movie_by_title", 
 	query = "select m from Movie m where m.title = :title")
-@NamedEntityGraph(name = "movie.actors",
-	attributeNodes = { 
-			@NamedAttributeNode("actors"),
-			@NamedAttributeNode("director")
-	}
-)
+//@NamedEntityGraph(name = "movie.actors",
+//	attributeNodes = { 
+//			@NamedAttributeNode("actors"),
+//			@NamedAttributeNode("director")
+//	}
+//)
 @Entity
 @Table(name = "movies")
 public class Movie {
@@ -56,6 +57,7 @@ public class Movie {
 	private Star director;
 	
 	private List<Star> actors;
+	private List<Play> plays;
 	
 	public Movie(String title, Short year, Short duration) {
 		this();
@@ -171,17 +173,27 @@ public class Movie {
 		this.director = director;
 	}
 	
-	@ManyToMany //(fetch = FetchType.EAGER) // fetch = Lazy (default)
-	@JoinTable(
-			name="play",
-			joinColumns = @JoinColumn(name="id_movie"),
-			inverseJoinColumns = @JoinColumn(name="id_actor"))
+//	@ManyToMany //(fetch = FetchType.EAGER) // fetch = Lazy (default)
+//	@JoinTable(
+//			name="play",
+//			joinColumns = @JoinColumn(name="id_movie"),
+//			inverseJoinColumns = @JoinColumn(name="id_actor"))
+	@Transient
 	public List<Star> getActors() {
 		return actors;
 	}
 
 	public void setActors(List<Star> actors) {
 		this.actors = actors;
+	}
+
+	@OneToMany(mappedBy = "movie")
+	public List<Play> getPlays() {
+		return plays;
+	}
+
+	public void setPlays(List<Play> plays) {
+		this.plays = plays;
 	}
 
 	@Override

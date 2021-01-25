@@ -178,7 +178,8 @@ class QueriesJPQL {
 	void testMoviesByActor() {
 		String name = "Daniel Craig";
 		entityManager.createQuery(
-				"select m from Movie m join m.actors s where s.name = :name", 
+				//"select m from Movie m join m.actors s where s.name = :name",
+				"select m from Movie m join m.plays p join p.actor s where s.name = :name",
 				Movie.class)
 			.setParameter("name", name)
 			.getResultStream()

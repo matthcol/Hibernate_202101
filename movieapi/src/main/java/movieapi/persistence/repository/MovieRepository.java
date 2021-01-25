@@ -23,5 +23,7 @@ public interface MovieRepository extends JpaRepository<Movie, Integer>{
 	//@Query("select m.title, m.year, s.name from Movie m join m.director s")
 	Stream<TitleYear> findByDirectorName(String name);
 	
-	Stream<Movie> findByActorsNameIgnoreCase(String name);
+	//Stream<Movie> findByActorsNameIgnoreCase(String name);
+	Stream<Movie> findByPlaysActorNameIgnoreCase(String name);
+
 }
