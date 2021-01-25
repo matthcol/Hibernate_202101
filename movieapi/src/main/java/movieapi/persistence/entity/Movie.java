@@ -25,6 +25,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Formula;
+
 // @NamedQueries( if several NamedQuery
 @NamedQuery(
 	name = "get_movie_by_title", 
@@ -48,6 +50,8 @@ public class Movie {
 	private String posterUri;
 	private ColorType color;
 	private List<String> genres;
+	private Language language;
+	private Integer hours;
 	
 	private Star director;
 	
@@ -102,6 +106,22 @@ public class Movie {
 		this.duration = duration;
 	}
 	
+	@Transient
+	public String getDurationHourMinute() {
+		int hours = duration / 60;
+		int minutes = duration % 60;
+		return hours + "h"+ minutes;
+	}
+	
+	@Formula(value="duration / 60") // hibernate not JPA
+	public Integer getHours() {
+		return hours;
+	}
+
+	public void setHours(Integer hours) {
+		this.hours = hours;
+	}
+
 	@Column(length=300, nullable = true)
 	public String getPosterUri() {
 		return posterUri;
@@ -129,6 +149,14 @@ public class Movie {
 
 	public void setGenres(List<String> genres) {
 		this.genres = genres;
+	}
+
+	public Language getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(Language language) {
+		this.language = language;
 	}
 
 	@ManyToOne(cascade=CascadeType.ALL)

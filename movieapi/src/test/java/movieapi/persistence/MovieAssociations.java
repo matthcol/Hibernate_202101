@@ -18,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.Rollback;
 
 import movieapi.persistence.entity.ColorType;
+import movieapi.persistence.entity.Language;
 import movieapi.persistence.entity.Movie;
 import movieapi.persistence.entity.Star;
 
@@ -143,6 +144,8 @@ class MovieAssociations {
 		Movie movie = new Movie("No Time To Die", (short) 2021, (short) 163);
 		movie.setColor(ColorType.COLOR);
 		Collections.addAll(movie.getGenres(), "Action", "Adventure", "Thriller");
+		Language lang = new Language("English", "En");
+		movie.setLanguage(lang);
 		entityManager.persist(movie);
 		entityManager.flush();
 		int idMovie = movie.getId();
@@ -150,9 +153,14 @@ class MovieAssociations {
 		entityManager.clear();
 		Movie movie2 = entityManager.find(Movie.class, idMovie);
 		System.out.println(movie2 + ": " + movie2.getColor() 
-				+ " ; genres: " + movie2.getGenres());
+				+ " ; genres: " + movie2.getGenres()
+				+ " ; language: " + movie2.getLanguage().getName()
+				+ "/" + movie2.getLanguage().getIsoCode2()
+				+ " ; duration: " + movie2.getDurationHourMinute()
+				+ " ; hours: " + movie2.getHours()
+				);
 		assertEquals(ColorType.COLOR, movie2.getColor());
-		// read again via query
+		// read again via query on color
 		entityManager.clear();
 		var color = ColorType.COLOR;
 		entityManager.createQuery(
@@ -161,12 +169,22 @@ class MovieAssociations {
 			.setParameter("color", color)
 			.getResultStream()
 			.forEach(m -> System.out.println(m + " ; color: " + m.getColor()));
+		// read again via query on genres
 		var genre = "Thriller";
 		entityManager.createQuery(
-				"select m from Movie m where :genre member of genres",
+				"select m from Movie m where :genre member of m.genres",
 				Movie.class)
 			.setParameter("genre", genre)
 			.getResultStream()
 			.forEach(m -> System.out.println(m + " ; genres: " + m.getGenres()));
+		// read again via query on language
+		var lang_code2 = "En";
+		entityManager.createQuery(
+				"select m from Movie m where m.language.isoCode2 = :lang",
+				Movie.class)
+			.setParameter("lang", lang_code2)
+			.getResultStream()
+			.forEach(m -> System.out.println(m + " ; language: " + m.getLanguage().getName()));
 	}
+	
 }
