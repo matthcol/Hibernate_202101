@@ -2,6 +2,7 @@ package movieapi.persistence;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.Rollback;
 
+import movieapi.persistence.entity.ColorType;
 import movieapi.persistence.entity.Movie;
 import movieapi.persistence.entity.Star;
 
@@ -25,6 +28,7 @@ class MovieAssociations {
 	EntityManager entityManager;
 	
 	@Test
+	@Rollback(false) // debug purpose
 	void testCreateMovieWithDirector() {
 		String title = "Avengers: Endgame";
 		short year = 2019;
@@ -32,6 +36,7 @@ class MovieAssociations {
 		Movie movie = new Movie(title, year, duration);
 		String name = "Joe Russo";
 		LocalDate birthdate = LocalDate.of(1971, 7, 8);
+		//Date birthdate = new Date(1971, 7, 8);
 		Star star = new Star(name, birthdate);
 		movie.setDirector(star);
 		entityManager.persist(star);
@@ -131,5 +136,37 @@ class MovieAssociations {
 		entityManager.flush();
 	}
 	
-	
+	@Test
+	@Rollback(false) // for debug purpose
+	void testCreateMovieAllFeatures() {
+		// scenario 1 : insert new Movie + new Star
+		Movie movie = new Movie("No Time To Die", (short) 2021, (short) 163);
+		movie.setColor(ColorType.COLOR);
+		Collections.addAll(movie.getGenres(), "Action", "Adventure", "Thriller");
+		entityManager.persist(movie);
+		entityManager.flush();
+		int idMovie = movie.getId();
+		// read previous data
+		entityManager.clear();
+		Movie movie2 = entityManager.find(Movie.class, idMovie);
+		System.out.println(movie2 + ": " + movie2.getColor() 
+				+ " ; genres: " + movie2.getGenres());
+		assertEquals(ColorType.COLOR, movie2.getColor());
+		// read again via query
+		entityManager.clear();
+		var color = ColorType.COLOR;
+		entityManager.createQuery(
+				"select m from Movie m where color = :color",
+				Movie.class)
+			.setParameter("color", color)
+			.getResultStream()
+			.forEach(m -> System.out.println(m + " ; color: " + m.getColor()));
+		var genre = "Thriller";
+		entityManager.createQuery(
+				"select m from Movie m where :genre member of genres",
+				Movie.class)
+			.setParameter("genre", genre)
+			.getResultStream()
+			.forEach(m -> System.out.println(m + " ; genres: " + m.getGenres()));
+	}
 }

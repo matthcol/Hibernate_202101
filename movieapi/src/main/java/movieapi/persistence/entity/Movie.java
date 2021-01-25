@@ -5,7 +5,11 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -42,6 +46,8 @@ public class Movie {
 	private Short year;
 	private Short duration;
 	private String posterUri;
+	private ColorType color;
+	private List<String> genres;
 	
 	private Star director;
 	
@@ -57,6 +63,7 @@ public class Movie {
 	public Movie() {
 		// only for insert use cases RAM => DB
 		actors = new ArrayList<>();
+		genres = new ArrayList<>();
 	}
 
 	@Id
@@ -102,6 +109,26 @@ public class Movie {
 
 	public void setPosterUri(String posterUri) {
 		this.posterUri = posterUri;
+	}
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = true)
+	public ColorType getColor() {
+		return color;
+	}
+
+	public void setColor(ColorType color) {
+		this.color = color;
+	}
+
+	@ElementCollection
+	@Column(nullable = true)
+	public List<String> getGenres() {
+		return genres;
+	}
+
+	public void setGenres(List<String> genres) {
+		this.genres = genres;
 	}
 
 	@ManyToOne(cascade=CascadeType.ALL)
