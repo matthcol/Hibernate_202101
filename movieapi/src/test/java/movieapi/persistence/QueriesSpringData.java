@@ -148,7 +148,7 @@ class QueriesSpringData {
 		Example<Star> example = Example.of(star);
 		var data = starRepository.findAll(example);
 		System.out.println(data);
-		//star.setBirthdate(LocalDate.of(1930, 3, 24));
+		star.setBirthdate(LocalDate.of(1930, 3, 24));
 		var data2 = starRepository.findAll(Example.of(star));
 		System.out.println(data2);
 		star.setName("mcqueen");
@@ -158,8 +158,7 @@ class QueriesSpringData {
 						ExampleMatcher.matchingAny()
 							.withIgnoreCase()
 							.withMatcher("name", GenericPropertyMatcher::endsWith)));
-		System.out.println(data3);
-				
+		System.out.println(data3);	
 	}
 	
 	@Test
