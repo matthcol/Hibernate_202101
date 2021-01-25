@@ -161,5 +161,12 @@ class QueriesSpringData {
 		System.out.println(data3);
 				
 	}
+	
+	@Test
+	void testMoviesByActor() {
+		String name = "Daniel Craig";
+		movieRepository.findByActorsNameIgnoreCase(name)
+			.forEach(System.out::println);
+	}
 }
 

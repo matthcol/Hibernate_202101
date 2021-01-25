@@ -173,5 +173,16 @@ class QueriesJPQL {
 			.limit(10)
 			.forEach(row->System.out.println(Arrays.toString(row)));
 	}
+	
+	@Test
+	void testMoviesByActor() {
+		String name = "Daniel Craig";
+		entityManager.createQuery(
+				"select m from Movie m join m.actors s where s.name = :name", 
+				Movie.class)
+			.setParameter("name", name)
+			.getResultStream()
+			.forEach(System.out::println);
+	}
 }
 

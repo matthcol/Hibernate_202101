@@ -1,11 +1,17 @@
 package movieapi.persistence.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -30,16 +36,18 @@ public class Movie {
 	
 	private Star director;
 	
-
-
+	private List<Star> actors;
+	
 	public Movie(String title, Short year, Short duration) {
-		super();
+		this();
 		this.title = title;
 		this.year = year;
 		this.duration = duration;
 	}
 	
 	public Movie() {
+		// only for insert use cases RAM => DB
+		actors = new ArrayList<>();
 	}
 
 	@Id
@@ -87,8 +95,8 @@ public class Movie {
 		this.posterUri = posterUri;
 	}
 
-	@ManyToOne
-	@JoinColumn(name = "id_director")
+	@ManyToOne //(fetch=FetchType.LAZY)	// fetch = FetchType.Eager by default
+	@JoinColumn(name = "id_director", nullable = true)
 	public Star getDirector() {
 		return director;
 	}
@@ -97,6 +105,19 @@ public class Movie {
 		this.director = director;
 	}
 	
+	@ManyToMany //(fetch = FetchType.EAGER) // fetch = Lazy
+	@JoinTable(
+			name="play",
+			joinColumns = @JoinColumn(name="id_movie"),
+			inverseJoinColumns = @JoinColumn(name="id_actor"))
+	public List<Star> getActors() {
+		return actors;
+	}
+
+	public void setActors(List<Star> actors) {
+		this.actors = actors;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(title);
