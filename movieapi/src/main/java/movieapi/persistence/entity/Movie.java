@@ -3,6 +3,7 @@ package movieapi.persistence.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,6 +14,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -20,8 +23,14 @@ import javax.persistence.Transient;
 
 // @NamedQueries( if several NamedQuery
 @NamedQuery(
-		name = "get_movie_by_title", 
-		query = "select m from Movie m where m.title = :title")
+	name = "get_movie_by_title", 
+	query = "select m from Movie m where m.title = :title")
+@NamedEntityGraph(name = "movie.actors",
+	attributeNodes = { 
+			@NamedAttributeNode("actors"),
+			@NamedAttributeNode("director")
+	}
+)
 @Entity
 @Table(name = "movies")
 public class Movie {
@@ -95,7 +104,9 @@ public class Movie {
 		this.posterUri = posterUri;
 	}
 
-	@ManyToOne //(fetch=FetchType.LAZY)	// fetch = FetchType.Eager by default
+	@ManyToOne(cascade=CascadeType.ALL)
+		//(cascade=CascadeType.PERSIST) 
+		//(fetch=FetchType.LAZY)	// fetch = FetchType.Eager by default
 	@JoinColumn(name = "id_director", nullable = true)
 	public Star getDirector() {
 		return director;
@@ -105,7 +116,7 @@ public class Movie {
 		this.director = director;
 	}
 	
-	@ManyToMany //(fetch = FetchType.EAGER) // fetch = Lazy
+	@ManyToMany //(fetch = FetchType.EAGER) // fetch = Lazy (default)
 	@JoinTable(
 			name="play",
 			joinColumns = @JoinColumn(name="id_movie"),

@@ -24,6 +24,7 @@ class MovieRepositoryTest {
 	void testCreate() {
 		Movie movie = new Movie("Avengers: Endgame", (short) 2019, null);
 		movieRepository.saveAndFlush(movie);
+		System.out.println(movie);
 		assertNotNull(movie.getId());
 	}
 	

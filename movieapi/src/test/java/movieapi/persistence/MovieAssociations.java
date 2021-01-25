@@ -3,6 +3,7 @@ package movieapi.persistence;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,6 +83,53 @@ class MovieAssociations {
 		Star cary = entityManager.find(Star.class, idCary);
 		movie4.setDirector(cary);
 		entityManager.flush();
+		entityManager.clear();
+		// scenario 5 : read movie again with default fetching
+		Movie movie5 = entityManager.find(Movie.class, idMovie);
+		System.out.println(movie5); // eager sur director et lazy sur actors
+		System.out.println(movie5.getDirector()); // already fetched
+		System.out.println(movie5.getActors()); // fetch actors here
+		entityManager.clear();
+		// scenario 6 : read movie again with dynamic fetching (JPQL)
+		Movie movie6 = entityManager.createQuery(
+				"select m from Movie m left join fetch m.director left join fetch m.actors where m.id =:id",
+				Movie.class)
+				.setParameter("id", idMovie)
+				.getSingleResult();
+		System.out.println(movie6); // eager sur director et actors
+		System.out.println(movie6.getDirector()); // already fetched
+		System.out.println(movie6.getActors()); // already fetched
+		entityManager.clear();
+		// scenario 7 : read movie again with dynamic fetching (entityGraph)
+		Movie movie7 = entityManager.find(Movie.class, idMovie,
+				Collections.singletonMap(
+						"javax.persistence.fetchgraph",
+						entityManager.getEntityGraph( "movie.actors" )
+					));
+		System.out.println("SC7: " + movie7); // eager sur director et actors
+		System.out.println(movie7.getDirector()); // already fetched
+		System.out.println(movie7.getActors()); // already fetched
+		entityManager.clear();
 	}
+	
+	@Test
+	void testCascade() {
+		// 2 objects en RAM not in hibernate cache
+		Movie movie = new Movie("No Time To Die", (short) 2021, (short) 163);
+		Star star = new Star("Cary Joji Fukunaga", LocalDate.of(1977,7,10));
+		movie.setDirector(star);
+		// add movie in cache hibernate for persistance
+		//entityManager.persist(star);
+		entityManager.persist(movie); // and star with cascade
+		entityManager.flush();
+		System.out.println(movie);
+		int idMovie = movie.getId();
+		int idCary = star.getId(); 
+		//entityManager.clear();
+		
+		entityManager.remove(movie);
+		entityManager.flush();
+	}
+	
 	
 }
